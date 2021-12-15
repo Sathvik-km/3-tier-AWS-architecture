@@ -1,0 +1,2624 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+
+    "Description" : "CloudFormation template for highly available and scalable LAMP Stack Deployment.",
+    "Metadata" : {
+      "AWS::CloudFormation::Interface" : {
+        "ParameterGroups": [
+            {
+                "Label" : { "default" : "Application Configurations" },
+                "Parameters" : [ "AppName", "Domain", "CertificateARN", "OpsEmail" ]
+            },
+            {
+                "Label" : { "default" : "Frontend Configurations" },
+                "Parameters" : ["LoadBalancerPath", "FrontendImage","InstanceType", "EC2Capacity", "EC2CapacityMin", "EC2CapacityMax", "ScaleInCPUUtil", "ScaleOutCPUUtil", "EC2ASPeriod", "EC2ASHealthCheckPath", "EC2ASHealthCheckPort" ]
+            },
+            {
+                "Label" : { "default" : "Backend Configurations - 1" },
+                "Parameters" : [ "LoadBalancerPath1","BackendImage1","BackendInstanceType1", "BackendEC2Capacity1", "BackendEC2CapacityMin1", "BackendEC2CapacityMax1", "BackendScaleInCPUUtil1", "BackendScaleOutCPUUtil1", "BackendEC2ASPeriod1", "BackendEC2ASHealthCheckPath1", "BackendEC2ASHealthCheckPort1" ]
+            },
+            {
+                "Label" : { "default" : "Backend Configurations - 2" },
+                "Parameters" : ["LoadBalancerPath2", "BackendImage2","BackendInstanceType2", "BackendEC2Capacity2", "BackendEC2CapacityMin2", "BackendEC2CapacityMax2", "BackendScaleInCPUUtil2", "BackendScaleOutCPUUtil2", "BackendEC2ASPeriod2", "BackendEC2ASHealthCheckPath2", "BackendEC2ASHealthCheckPort2" ]
+            },
+            {
+                "Label" : { "default" : "Backend Configurations - 3" },
+                "Parameters" : ["LoadBalancerPath3", "BackendImage3","BackendInstanceType3", "BackendEC2Capacity3", "BackendEC2CapacityMin3", "BackendEC2CapacityMax3", "BackendScaleInCPUUtil3", "BackendScaleOutCPUUtil3", "BackendEC2ASPeriod3", "BackendEC2ASHealthCheckPath3", "BackendEC2ASHealthCheckPort3" ]
+            },
+            {
+                "Label" : { "default" : "Backend Configurations - 4" },
+                "Parameters" : ["LoadBalancerPath4", "BackendImage4","BackendInstanceType4", "BackendEC2Capacity4", "BackendEC2CapacityMin4", "BackendEC2CapacityMax4", "BackendScaleInCPUUtil4", "BackendScaleOutCPUUtil4", "BackendEC2ASPeriod4", "BackendEC2ASHealthCheckPath4", "BackendEC2ASHealthCheckPort4" ]
+            },
+            {
+                "Label" : { "default" : "RDS Configurations" },
+                "Parameters" : [ "DBInstanceClass", "DBStorage", "RDSDeletionPolicy", "DBName", "DBUser", "DBPassword" ]
+            }
+        ],
+        "ParameterLabels": {
+          "AppName" : { "default" : "Application Name" },
+          "Domain" : { "default" : "Hosted Domain Name" },
+          "CertificateARN" : { "default" : "SSL/TLS Certificate ARN" },
+          "OpsEmail" : { "default" : "Admin Email" },
+          "DBName" : { "default" : "Database name" },
+          "DBUser" : { "default" : "Database user" },
+          "DBPassword" : { "default" : "Database password" },
+          "DBStorage" : { "default" : "Database Storage" },
+          "DBInstanceClass" : { "default" : "Database RDS Instance Class" },
+          "LoadBalancerPath": { "default" : "List Valid Paths"},
+          "FrontendImage" : { "default" : "Configured Image ID" },
+          "InstanceType" : { "default" : "EC2 Instance Type" },
+          "EC2Capacity" : { "default" : "EC2 AutoScaling Desired Capacity" },
+          "ScaleInCPUUtil" : { "default" : "Scale in when CPU Usage >=" },
+          "ScaleOutCPUUtil" : { "default" : "Sclae out when CPU Usage <=" },
+          "EC2ASPeriod" : { "default" : "AutoScaling Period" },
+          "RDSDeletionPolicy" : { "default" : "RDS Deletion Policy" },
+          "EC2CapacityMin" : { "default" : "EC2 AutoScaling Minimum Capacity" },
+          "EC2CapacityMax" : { "default" : "EC2 AutoScaling Maximum Capacity" },
+          "EC2ASHealthCheckPath" : { "default" : "EC2 Health Check Port" },
+          "EC2ASHealthCheckPort" : { "default" : "EC2 Health Check Port" },
+          "LoadBalancerPath1" : { "default" : "Path Patterns List"},
+          "BackendImage1" : { "default" : "Configured Image ID" },
+          "BackendInstanceType1" : { "default" : "EC2 Instance Type" },
+          "BackendEC2Capacity1" : { "default" : "EC2 AutoScaling Desired Capacity" },
+          "BackendScaleInCPUUtil1" : { "default" : "Scale in when CPU Usage >=" },
+          "BackendScaleOutCPUUtil1" : { "default" : "Sclae out when CPU Usage <=" },
+          "BackendEC2ASPeriod1" : { "default" : "AutoScaling Period" },
+          "BackendRDSDeletionPolicy1" : { "default" : "RDS Deletion Policy" },
+          "BackendEC2CapacityMin1" : { "default" : "EC2 AutoScaling Minimum Capacity" },
+          "BackendEC2CapacityMax1" : { "default" : "EC2 AutoScaling Maximum Capacity" },
+          "BackendEC2ASHealthCheckPath1" : { "default" : "EC2 Health Check Port" },
+          "BackendEC2ASHealthCheckPort1" : { "default" : "EC2 Health Check Port" },
+          "LoadBalancerPath2" : { "default" : "Path Patterns List"},
+          "BackendImage2" : { "default" : "Configured Image ID" },
+          "BackendInstanceType2" : { "default" : "EC2 Instance Type" },
+          "BackendEC2Capacity2" : { "default" : "EC2 AutoScaling Desired Capacity" },
+          "BackendScaleInCPUUtil2" : { "default" : "Scale in when CPU Usage >=" },
+          "BackendScaleOutCPUUtil2" : { "default" : "Sclae out when CPU Usage <=" },
+          "BackendEC2ASPeriod2" : { "default" : "AutoScaling Period" },
+          "BackendRDSDeletionPolicy2" : { "default" : "RDS Deletion Policy" },
+          "BackendEC2CapacityMin2" : { "default" : "EC2 AutoScaling Minimum Capacity" },
+          "BackendEC2CapacityMax2" : { "default" : "EC2 AutoScaling Maximum Capacity" },
+          "BackendEC2ASHealthCheckPath2" : { "default" : "EC2 Health Check Port" },
+          "BackendEC2ASHealthCheckPort2" : { "default" : "EC2 Health Check Port" },
+          "LoadBalancerPath3" : { "default" : "Path Patterns List"},
+          "BackendImage3" : { "default" : "Configured Image ID" },
+          "BackendInstanceType3" : { "default" : "EC2 Instance Type" },
+          "BackendEC2Capacity3" : { "default" : "EC2 AutoScaling Desired Capacity" },
+          "BackendScaleInCPUUtil3" : { "default" : "Scale in when CPU Usage >=" },
+          "BackendScaleOutCPUUtil3" : { "default" : "Sclae out when CPU Usage <=" },
+          "BackendEC2ASPeriod3" : { "default" : "AutoScaling Period" },
+          "BackendRDSDeletionPolicy3" : { "default" : "RDS Deletion Policy" },
+          "BackendEC2CapacityMin3" : { "default" : "EC2 AutoScaling Minimum Capacity" },
+          "BackendEC2CapacityMax3" : { "default" : "EC2 AutoScaling Maximum Capacity" },
+          "BackendEC2ASHealthCheckPath3" : { "default" : "EC2 Health Check Port" },
+          "BackendEC2ASHealthCheckPort3" : { "default" : "EC2 Health Check Port" },
+          "LoadBalancerPath4" : { "default" : "Path Patterns List"},
+          "BackendImage4" : { "default" : "Configured Image ID" },
+          "BackendInstanceType4" : { "default" : "EC2 Instance Type" },
+          "BackendEC2Capacity4" : { "default" : "EC2 AutoScaling Desired Capacity" },
+          "BackendScaleInCPUUtil4" : { "default" : "Scale in when CPU Usage >=" },
+          "BackendScaleOutCPUUtil4" : { "default" : "Sclae out when CPU Usage <=" },
+          "BackendEC2ASPeriod4" : { "default" : "AutoScaling Period" },
+          "BackendRDSDeletionPolicy4" : { "default" : "RDS Deletion Policy" },
+          "BackendEC2CapacityMin4" : { "default" : "EC2 AutoScaling Minimum Capacity" },
+          "BackendEC2CapacityMax4" : { "default" : "EC2 AutoScaling Maximum Capacity" },
+          "BackendEC2ASHealthCheckPath4" : { "default" : "EC2 Health Check Port" },
+          "BackendEC2ASHealthCheckPort4" : { "default" : "EC2 Health Check Port" }
+        }
+      }
+    },
+
+    "Parameters" : {
+
+      "AppName": {
+        "Type": "String",
+        "MinLength": "4",
+        "MaxLength": "128",
+        "Default": "My PHP Application"
+      },
+
+
+
+      "Domain": {
+        "Type": "String",
+        "Description": "Type in hosted domain name (for example :- example.com)",
+        "Default" : "pw22hbp02.tk",
+        "ConstraintDescription": "Must be a valid hosted domain!"
+      },
+
+      "CertificateARN": {
+        "Type": "String",
+        "Description": "ARN of SSL/TLS Certificate",
+        "ConstraintDescription": "Must be a valid cetificate ARN",
+        "Default": "arn:aws:acm:us-west-1:066724418324:certificate/9992b84f-138c-49a6-88ae-8535f6d27426"
+      },
+
+      "OpsEmail": {
+        "Type": "String",
+        "Description": "E-Mail address for SNS Notification/Admin login",
+        "AllowedPattern": "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)",
+        "Default": "admin@notify.me",
+        "ConstraintDescription": "Must be a valid email address."
+      },
+
+
+
+      "DBName": {
+        "Type": "String",
+        "Description" : "MySQL Database name",
+        "MinLength": "4",
+        "MaxLength": "64",
+        "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+        "Default": "mybb",
+        "ConstraintDescription" : "Alphanumeric characters cannot start with a number!"
+      },
+
+      "DBUser": {
+        "Type": "String",
+        "Description" : "MySQL Username",
+        "MinLength": "4",
+        "MaxLength": "16",
+        "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+        "Default": "root",
+        "ConstraintDescription" : "Alphanumeric characters cannot start with a number!"
+      },
+
+      "DBPassword": {
+        "NoEcho": "true",
+        "Type": "String",
+        "Description" : "MySQL Password ",
+        "ConstraintDescription" : "The given password is too short!"
+      },
+
+      "DBStorage": {
+        "Type": "Number",
+        "Description" : "The size of the Database Storage (GB), >= 100GB is recommended",
+        "MinValue": "25",
+        "MaxValue": "6144",
+        "Default": "25",
+        "ConstraintDescription" : "Must be between 25 and 6144 GB!"
+      },
+
+      "DBInstanceClass": {
+        "Type": "String",
+        "Description" : "The Database Instance Type",
+        "AllowedValues" : [
+          "db.t2.micro",
+          "db.t2.small",
+          "db.t2.medium",
+          "db.t2.large",
+          "db.m3.medium",
+          "db.m4.large",
+          "db.m4.xlarge",
+          "db.m4.2xlarge",
+          "db.m4.4xlarge",
+          "db.m4.10xlarge",
+          "db.r3.large",
+          "db.r3.xlarge",
+          "db.r3.2xlarge",
+          "db.r3.4xlarge",
+          "db.r3.8xlarge"
+        ],
+        "Default": "db.t2.micro",
+        "ConstraintDescription" : "You Must select an Instance Type!"
+      },
+
+      "RDSDeletionPolicy": {
+        "Description" : "What happens after deleting the stack? Snapshot is recommended",
+        "Type" : "String",
+        "Default" : "Snapshot",
+        "AllowedValues" : [ "Delete", "Retain", "Snapshot" ]
+      },
+
+      "LoadBalancerPath" : {
+        "Description" : "Specify Comma-delimited list of paths to route requests to (for example: /hello.html,/hellodir/*",
+        "Type" : "CommaDelimitedList",
+        "Default": "/"
+      },
+
+      "FrontendImage" : {
+        "Description" : " Specify Image ID",
+        "Type":"AWS::EC2::Image::Id",
+        "Default":"ami-03b527d9f5d0ef4be"
+
+    },
+
+      "InstanceType" : {
+        "Description" : "EC2 Instance Type",
+        "Type" : "String",
+        "Default" : "t2.micro",
+        "AllowedValues" : [
+          "t2.micro",
+          "t2.small",
+          "t2.medium",
+          "t2.large",
+          "m4.large",
+          "m4.xlarge",
+          "m4.2xlarge",
+          "m4.4xlarge",
+          "m4.10xlarge",
+          "c4.large",
+          "c4.xlarge",
+          "c4.2xlarge",
+          "c4.4xlarge",
+          "c4.8xlarge",
+          "m3.medium",
+          "m3.large",
+          "m3.xlarge",
+          "m3.2xlarge",
+          "c3.large",
+          "c3.xlarge",
+          "c3.2xlarge",
+          "c3.4xlarge",
+          "c3.8xlarge"
+        ],
+        "ConstraintDescription" : "Must be a valid EC2 Instance Type!"
+      },
+
+      "EC2Capacity": {
+        "Type": "Number",
+        "Description" : "EC2 instances count (Minimum 2 for High Availability).",
+        "MinValue": "2",
+        "MaxValue": "10",
+        "Default": "2",
+        "ConstraintDescription" : "Must be between 2 and 10 EC2 instances."
+      },
+
+      "EC2CapacityMin": {
+        "Type": "Number",
+        "Description" : "EC2 instances count (2 is recommended for High Availability).",
+        "MinValue": "1",
+        "MaxValue": "1000",
+        "Default": "2",
+        "ConstraintDescription" : "Must be between 1 and 1000 EC2 instances."
+      },
+
+      "EC2CapacityMax": {
+        "Type": "Number",
+        "Description" : "EC2 instances maximum count",
+        "MinValue": "3",
+        "MaxValue": "1000",
+        "Default": "10",
+        "ConstraintDescription" : "Must be between 3 and 1000 EC2 instances."
+      },
+
+      "ScaleInCPUUtil": {
+        "Type": "Number",
+        "Description" : "Scale in when CPU Util. goes below",
+        "MinValue": "5",
+        "MaxValue": "100",
+        "Default": "35",
+        "ConstraintDescription" : "Must be a between 5 and 100!"
+      },
+
+      "ScaleOutCPUUtil": {
+        "Type": "Number",
+        "Description" : "Scale out when CPU Util. goes above",
+        "MinValue": "5",
+        "MaxValue": "100",
+        "Default": "65",
+        "ConstraintDescription" : "Must be a between 5 and 100!"
+      },
+
+      "EC2ASPeriod": {
+        "Type": "Number",
+        "Description" : "Auto-Scaling Period in seconds (300 is recommended)",
+        "MinValue": "1",
+        "Default": "300",
+        "ConstraintDescription" : "Must be >=1!"
+      },
+
+      "EC2ASHealthCheckPath": {
+        "Type": "String",
+        "Description" : "Health Check path e.g. for http://domain.com/ use '/' for http://domain.com/home use '/home/'",
+        "Default": "/",
+        "MinLength": "1",
+        "ConstraintDescription" : "Must be a valid path"
+      },
+
+      "EC2ASHealthCheckPort": {
+        "Type": "String",
+        "Description" : "ELB Listening and Health Check Port (0-65535)",
+        "Default": "80",
+        "ConstraintDescription" : "Must be a valid port between 0 and 65535"
+      },
+
+      "LoadBalancerPath1" : {
+           "Description" : "Specify Comma-delimited list of paths to route requests to (for example: /hello.html,/hellodir/*",
+           "Type" : "CommaDelimitedList",
+           "Default": "/add-user.php"
+        },
+
+      "BackendImage1" : {
+          "Description" : " Specify Image ID",
+          "Type":"String",
+          "Default":"ami-06ddcfaab84c5363b"
+
+      },
+
+      "BackendInstanceType1" : {
+        "Description" : "EC2 Instance Type",
+        "Type" : "String",
+        "Default" : "t2.micro",
+        "AllowedValues" : [
+          "t2.micro",
+          "t2.small",
+          "t2.medium",
+          "t2.large",
+          "m4.large",
+          "m4.xlarge",
+          "m4.2xlarge",
+          "m4.4xlarge",
+          "m4.10xlarge",
+          "c4.large",
+          "c4.xlarge",
+          "c4.2xlarge",
+          "c4.4xlarge",
+          "c4.8xlarge",
+          "m3.medium",
+          "m3.large",
+          "m3.xlarge",
+          "m3.2xlarge",
+          "c3.large",
+          "c3.xlarge",
+          "c3.2xlarge",
+          "c3.4xlarge",
+          "c3.8xlarge"
+        ],
+        "ConstraintDescription" : "Must be a valid EC2 Instance Type!"
+      },
+
+      "BackendEC2Capacity1": {
+        "Type": "Number",
+        "Description" : "EC2 instances count (Minimum 2 for High Availability).",
+        "MinValue": "2",
+        "MaxValue": "10",
+        "Default": "2",
+        "ConstraintDescription" : "Must be between 2 and 10 EC2 instances."
+      },
+
+      "BackendEC2CapacityMin1": {
+        "Type": "Number",
+        "Description" : "EC2 instances count (2 is recommended for High Availability).",
+        "MinValue": "1",
+        "MaxValue": "1000",
+        "Default": "2",
+        "ConstraintDescription" : "Must be between 1 and 1000 EC2 instances."
+      },
+
+      "BackendEC2CapacityMax1": {
+        "Type": "Number",
+        "Description" : "EC2 instances maximum count",
+        "MinValue": "3",
+        "MaxValue": "1000",
+        "Default": "10",
+        "ConstraintDescription" : "Must be between 3 and 1000 EC2 instances."
+      },
+
+      "BackendScaleInCPUUtil1": {
+        "Type": "Number",
+        "Description" : "Scale in when CPU Util. goes below",
+        "MinValue": "5",
+        "MaxValue": "100",
+        "Default": "35",
+        "ConstraintDescription" : "Must be a between 5 and 100!"
+      },
+
+      "BackendScaleOutCPUUtil1": {
+        "Type": "Number",
+        "Description" : "Scale out when CPU Util. goes above",
+        "MinValue": "5",
+        "MaxValue": "100",
+        "Default": "65",
+        "ConstraintDescription" : "Must be a between 5 and 100!"
+      },
+
+      "BackendEC2ASPeriod1": {
+        "Type": "Number",
+        "Description" : "Auto-Scaling Period in seconds (300 is recommended)",
+        "MinValue": "1",
+        "Default": "300",
+        "ConstraintDescription" : "Must be >=1!"
+      },
+
+      "BackendEC2ASHealthCheckPath1": {
+        "Type": "String",
+        "Description" : "Health Check path e.g. for http://domain.com/ use '/' for http://domain.com/home use '/home/'",
+        "Default": "/add-user.php",
+        "MinLength": "1",
+        "ConstraintDescription" : "Must be a valid path"
+      },
+
+      "BackendEC2ASHealthCheckPort1": {
+        "Type": "String",
+        "Description" : "ELB Listening and Health Check Port (0-65535)",
+        "Default": "80",
+        "ConstraintDescription" : "Must be a valid port between 0 and 65535"
+      },
+
+      "LoadBalancerPath2" : {
+        "Description" : "Specify Comma-delimited list of paths to route requests to (for example: /hello.html,/hellodir/*",
+        "Type" : "CommaDelimitedList",
+        "Default": "/all-users.php"
+     },
+
+      "BackendImage2" : {
+        "Description" : " Specify Image ID",
+        "Type":"String",
+        "Default":"ami-06ddcfaab84c5363b"
+    },
+
+      "BackendInstanceType2" : {
+        "Description" : "EC2 Instance Type",
+        "Type" : "String",
+        "Default" : "t2.micro",
+        "AllowedValues" : [
+          "t2.micro",
+          "t2.small",
+          "t2.medium",
+          "t2.large",
+          "m4.large",
+          "m4.xlarge",
+          "m4.2xlarge",
+          "m4.4xlarge",
+          "m4.10xlarge",
+          "c4.large",
+          "c4.xlarge",
+          "c4.2xlarge",
+          "c4.4xlarge",
+          "c4.8xlarge",
+          "m3.medium",
+          "m3.large",
+          "m3.xlarge",
+          "m3.2xlarge",
+          "c3.large",
+          "c3.xlarge",
+          "c3.2xlarge",
+          "c3.4xlarge",
+          "c3.8xlarge"
+        ],
+        "ConstraintDescription" : "Must be a valid EC2 Instance Type!"
+      },
+
+      "BackendEC2Capacity2": {
+        "Type": "Number",
+        "Description" : "EC2 instances count (Minimum 2 for High Availability).",
+        "MinValue": "2",
+        "MaxValue": "10",
+        "Default": "2",
+        "ConstraintDescription" : "Must be between 2 and 10 EC2 instances."
+      },
+
+      "BackendEC2CapacityMin2": {
+        "Type": "Number",
+        "Description" : "EC2 instances count (2 is recommended for High Availability).",
+        "MinValue": "1",
+        "MaxValue": "1000",
+        "Default": "2",
+        "ConstraintDescription" : "Must be between 1 and 1000 EC2 instances."
+      },
+
+      "BackendEC2CapacityMax2": {
+        "Type": "Number",
+        "Description" : "EC2 instances maximum count",
+        "MinValue": "3",
+        "MaxValue": "1000",
+        "Default": "10",
+        "ConstraintDescription" : "Must be between 3 and 1000 EC2 instances."
+      },
+
+      "BackendScaleInCPUUtil2": {
+        "Type": "Number",
+        "Description" : "Scale in when CPU Util. goes below",
+        "MinValue": "5",
+        "MaxValue": "100",
+        "Default": "35",
+        "ConstraintDescription" : "Must be a between 5 and 100!"
+      },
+
+      "BackendScaleOutCPUUtil2": {
+        "Type": "Number",
+        "Description" : "Scale out when CPU Util. goes above",
+        "MinValue": "5",
+        "MaxValue": "100",
+        "Default": "65",
+        "ConstraintDescription" : "Must be a between 5 and 100!"
+      },
+
+      "BackendEC2ASPeriod2": {
+        "Type": "Number",
+        "Description" : "Auto-Scaling Period in seconds (300 is recommended)",
+        "MinValue": "1",
+        "Default": "300",
+        "ConstraintDescription" : "Must be >=1!"
+      },
+
+      "BackendEC2ASHealthCheckPath2": {
+        "Type": "String",
+        "Description" : "Health Check path e.g. for http://domain.com/ use '/' for http://domain.com/home use '/home/'",
+        "Default": "/all-users.php",
+        "MinLength": "1",
+        "ConstraintDescription" : "Must be a valid path"
+      },
+
+      "BackendEC2ASHealthCheckPort2": {
+        "Type": "String",
+        "Description" : "ELB Listening and Health Check Port (0-65535)",
+        "Default": "80",
+        "ConstraintDescription" : "Must be a valid port between 0 and 65535"
+      },
+
+      "LoadBalancerPath3" : {
+        "Description" : "Specify Comma-delimited list of paths to route requests to (for example: /hello.html,/hellodir/*",
+        "Type" : "CommaDelimitedList",
+        "Default": "/update-user.php"
+     },
+
+      "BackendImage3" : {
+        "Description" : " Specify Image ID",
+        "Type":"String",
+        "Default":"ami-06ddcfaab84c5363b"
+    },
+
+      "BackendInstanceType3" : {
+        "Description" : "EC2 Instance Type",
+        "Type" : "String",
+        "Default" : "t2.micro",
+        "AllowedValues" : [
+          "t2.micro",
+          "t2.small",
+          "t2.medium",
+          "t2.large",
+          "m4.large",
+          "m4.xlarge",
+          "m4.2xlarge",
+          "m4.4xlarge",
+          "m4.10xlarge",
+          "c4.large",
+          "c4.xlarge",
+          "c4.2xlarge",
+          "c4.4xlarge",
+          "c4.8xlarge",
+          "m3.medium",
+          "m3.large",
+          "m3.xlarge",
+          "m3.2xlarge",
+          "c3.large",
+          "c3.xlarge",
+          "c3.2xlarge",
+          "c3.4xlarge",
+          "c3.8xlarge"
+        ],
+        "ConstraintDescription" : "Must be a valid EC2 Instance Type!"
+      },
+
+      "BackendEC2Capacity3": {
+        "Type": "Number",
+        "Description" : "EC2 instances count (Minimum 2 for High Availability).",
+        "MinValue": "2",
+        "MaxValue": "10",
+        "Default": "2",
+        "ConstraintDescription" : "Must be between 2 and 10 EC2 instances."
+      },
+
+      "BackendEC2CapacityMin3": {
+        "Type": "Number",
+        "Description" : "EC2 instances count (2 is recommended for High Availability).",
+        "MinValue": "1",
+        "MaxValue": "1000",
+        "Default": "2",
+        "ConstraintDescription" : "Must be between 1 and 1000 EC2 instances."
+      },
+
+      "BackendEC2CapacityMax3": {
+        "Type": "Number",
+        "Description" : "EC2 instances maximum count",
+        "MinValue": "3",
+        "MaxValue": "1000",
+        "Default": "10",
+        "ConstraintDescription" : "Must be between 3 and 1000 EC2 instances."
+      },
+
+      "BackendScaleInCPUUtil3": {
+        "Type": "Number",
+        "Description" : "Scale in when CPU Util. goes below",
+        "MinValue": "5",
+        "MaxValue": "100",
+        "Default": "35",
+        "ConstraintDescription" : "Must be a between 5 and 100!"
+      },
+
+      "BackendScaleOutCPUUtil3": {
+        "Type": "Number",
+        "Description" : "Scale out when CPU Util. goes above",
+        "MinValue": "5",
+        "MaxValue": "100",
+        "Default": "65",
+        "ConstraintDescription" : "Must be a between 5 and 100!"
+      },
+
+      "BackendEC2ASPeriod3": {
+        "Type": "Number",
+        "Description" : "Auto-Scaling Period in seconds (300 is recommended)",
+        "MinValue": "1",
+        "Default": "300",
+        "ConstraintDescription" : "Must be >=1!"
+      },
+
+      "BackendEC2ASHealthCheckPath3": {
+        "Type": "String",
+        "Description" : "Health Check path e.g. for http://domain.com/ use '/' for http://domain.com/home use '/home/'",
+        "Default": "/update-user.php",
+        "MinLength": "1",
+        "ConstraintDescription" : "Must be a valid path"
+      },
+
+      "BackendEC2ASHealthCheckPort3": {
+        "Type": "String",
+        "Description" : "ELB Listening and Health Check Port (0-65535)",
+        "Default": "80",
+        "ConstraintDescription" : "Must be a valid port between 0 and 65535"
+      },
+
+      "LoadBalancerPath4" : {
+        "Description" : "Specify Comma-delimited list of paths to route requests to (for example: /hello.html,/hellodir/*",
+        "Type" : "CommaDelimitedList",
+        "Default": "/delete-user.php"
+     },
+
+      "BackendImage4" : {
+        "Description" : " Specify Image ID",
+        "Type":"String",
+        "Default":"ami-06ddcfaab84c5363b"
+    },
+
+      "BackendInstanceType4" : {
+        "Description" : "EC2 Instance Type",
+        "Type" : "String",
+        "Default" : "t2.micro",
+        "AllowedValues" : [
+          "t2.micro",
+          "t2.small",
+          "t2.medium",
+          "t2.large",
+          "m4.large",
+          "m4.xlarge",
+          "m4.2xlarge",
+          "m4.4xlarge",
+          "m4.10xlarge",
+          "c4.large",
+          "c4.xlarge",
+          "c4.2xlarge",
+          "c4.4xlarge",
+          "c4.8xlarge",
+          "m3.medium",
+          "m3.large",
+          "m3.xlarge",
+          "m3.2xlarge",
+          "c3.large",
+          "c3.xlarge",
+          "c3.2xlarge",
+          "c3.4xlarge",
+          "c3.8xlarge"
+        ],
+        "ConstraintDescription" : "Must be a valid EC2 Instance Type!"
+      },
+
+      "BackendEC2Capacity4": {
+        "Type": "Number",
+        "Description" : "EC2 instances count (Minimum 2 for High Availability).",
+        "MinValue": "2",
+        "MaxValue": "10",
+        "Default": "2",
+        "ConstraintDescription" : "Must be between 2 and 10 EC2 instances."
+      },
+
+      "BackendEC2CapacityMin4": {
+        "Type": "Number",
+        "Description" : "EC2 instances count (2 is recommended for High Availability).",
+        "MinValue": "1",
+        "MaxValue": "1000",
+        "Default": "2",
+        "ConstraintDescription" : "Must be between 1 and 1000 EC2 instances."
+      },
+
+      "BackendEC2CapacityMax4": {
+        "Type": "Number",
+        "Description" : "EC2 instances maximum count",
+        "MinValue": "3",
+        "MaxValue": "1000",
+        "Default": "10",
+        "ConstraintDescription" : "Must be between 3 and 1000 EC2 instances."
+      },
+
+      "BackendScaleInCPUUtil4": {
+        "Type": "Number",
+        "Description" : "Scale in when CPU Util. goes below",
+        "MinValue": "5",
+        "MaxValue": "100",
+        "Default": "35",
+        "ConstraintDescription" : "Must be a between 5 and 100!"
+      },
+
+      "BackendScaleOutCPUUtil4": {
+        "Type": "Number",
+        "Description" : "Scale out when CPU Util. goes above",
+        "MinValue": "5",
+        "MaxValue": "100",
+        "Default": "65",
+        "ConstraintDescription" : "Must be a between 5 and 100!"
+      },
+
+      "BackendEC2ASPeriod4": {
+        "Type": "Number",
+        "Description" : "Auto-Scaling Period in seconds (300 is recommended)",
+        "MinValue": "1",
+        "Default": "300",
+        "ConstraintDescription" : "Must be >=1!"
+      },
+
+      "BackendEC2ASHealthCheckPath4": {
+        "Type": "String",
+        "Description" : "Health Check path e.g. for http://domain.com/ use '/' for http://domain.com/home use '/home/'",
+        "Default": "/delete-user.php",
+        "MinLength": "1",
+        "ConstraintDescription" : "Must be a valid path"
+      },
+
+      "BackendEC2ASHealthCheckPort4": {
+        "Type": "String",
+        "Description" : "ELB Listening and Health Check Port (0-65535)",
+        "Default": "80",
+        "ConstraintDescription" : "Must be a valid port between 0 and 65535"
+      }
+
+
+    },
+
+    "Mappings" : {
+      "AWSInstanceType2Arch" : {
+        "t2.micro"    : { "Arch" : "64" },
+        "t2.small"    : { "Arch" : "64" },
+        "t2.medium"   : { "Arch" : "64" },
+        "t2.large"    : { "Arch" : "64" },
+        "m4.large"    : { "Arch" : "64" },
+        "m4.xlarge"   : { "Arch" : "64" },
+        "m4.2xlarge"  : { "Arch" : "64" },
+        "m4.4xlarge"  : { "Arch" : "64" },
+        "m4.10xlarge" : { "Arch" : "64" },
+        "c4.large"    : { "Arch" : "64" },
+        "c4.xlarge"   : { "Arch" : "64" },
+        "c4.2xlarge"  : { "Arch" : "64" },
+        "c4.4xlarge"  : { "Arch" : "64" },
+        "c4.8xlarge"  : { "Arch" : "64" },
+        "m3.medium"   : { "Arch" : "64" },
+        "m3.large"    : { "Arch" : "64" },
+        "m3.xlarge"   : { "Arch" : "64" },
+        "m3.2xlarge"  : { "Arch" : "64" },
+        "c3.large"    : { "Arch" : "64" },
+        "c3.xlarge"   : { "Arch" : "64" },
+        "c3.2xlarge"  : { "Arch" : "64" },
+        "c3.4xlarge"  : { "Arch" : "64" },
+        "c3.8xlarge"  : { "Arch" : "64" }
+      },
+
+      "AWSRegionArch2AMI": {
+        "us-east-1"      : { "64" : "ami-a4c7edb2" },
+        "us-east-2"      : { "64" : "ami-8a7859ef" },
+        "us-west-1"      : { "64" : "ami-6df1e514" },
+        "us-west-2"      : { "64" : "ami-327f5352" },
+        "ca-central-1"   : { "64" : "ami-a7aa15c3" },
+        "eu-west-1"      : { "64" : "ami-d7b9a2b1" },
+        "eu-west-2"      : { "64" : "ami-ed100689" },
+        "eu-central-1"   : { "64" : "ami-82be18ed" },
+        "ap-southeast-1" : { "64" : "ami-77af2014" },
+        "ap-southeast-2" : { "64" : "ami-10918173" },
+        "ap-northeast-1" : { "64" : "ami-3bd3c45c" },
+        "ap-northeast-2" : { "64" : "ami-e21cc38c" },
+        "ap-south-1"     : { "64" : "ami-47205e28" },
+        "sa-east-1"      : { "64" : "ami-87dab1eb" }
+      },
+
+      "Region2Principal": {
+        "us-east-1"      : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "us-east-2"      : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "us-west-1"      : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "us-west-2"      : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "ca-central-1"   : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "eu-west-1"      : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "eu-west-2"      : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "eu-central-1"   : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "ap-southeast-1" : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "ap-southeast-2" : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "ap-northeast-1" : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "ap-northeast-2" : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "ap-south-1"     : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    },
+        "sa-east-1"      : { "EC2Principal" : "ec2.amazonaws.com",    "OpsWorksPrincipal" : "opsworks.amazonaws.com"    }
+      },
+
+      "Region2ARNPrefix": {
+        "us-east-1"      : { "ARNPrefix": "arn:aws:"    },
+        "us-east-2"      : { "ARNPrefix": "arn:aws:"    },
+        "us-west-1"      : { "ARNPrefix": "arn:aws:"    },
+        "us-west-2"      : { "ARNPrefix": "arn:aws:"    },
+        "ca-central-1"   : { "ARNPrefix": "arn:aws:"    },
+        "eu-west-1"      : { "ARNPrefix": "arn:aws:"    },
+        "eu-west-2"      : { "ARNPrefix": "arn:aws:"    },
+        "eu-central-1"   : { "ARNPrefix": "arn:aws:"    },
+        "ap-northeast-1" : { "ARNPrefix": "arn:aws:"    },
+        "ap-northeast-2" : { "ARNPrefix": "arn:aws:"    },
+        "ap-southeast-1" : { "ARNPrefix": "arn:aws:"    },
+        "ap-southeast-2" : { "ARNPrefix": "arn:aws:"    },
+        "sa-east-1"      : { "ARNPrefix": "arn:aws:"    }
+      }
+    },
+
+    "Conditions": {
+        "Activate1" : {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Fn::Join": [
+                                "",
+                                {
+                                    "Ref": "LoadBalancerPath1"
+                                }
+                            ]
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+
+        "Activate2" : {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Fn::Join": [
+                                "",
+                                {
+                                    "Ref": "LoadBalancerPath2"
+                                }
+                            ]
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+
+        "Activate3" : {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Fn::Join": [
+                                "",
+                                {
+                                    "Ref": "LoadBalancerPath3"
+                                }
+                            ]
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+
+        "Activate4" : {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Fn::Join": [
+                                "",
+                                {
+                                    "Ref": "LoadBalancerPath4"
+                                }
+                            ]
+                        },
+                        ""
+                    ]
+                }
+            ]
+        }
+
+    },
+
+
+
+    "Resources" : {
+
+      "VPC" : {
+        "Type" : "AWS::EC2::VPC",
+        "Properties" : {
+          "CidrBlock" : "10.0.0.0/16",
+          "Tags" : [
+            { "Key" : "Name", "Value" : "Main VPC" }
+          ]
+        }
+      },
+
+      "PublicSubnetA" : {
+        "Type" : "AWS::EC2::Subnet",
+        "Properties" : {
+          "AvailabilityZone" : { "Fn::Select" : [ "0", { "Fn::GetAZs" : "" } ] },
+          "CidrBlock" : "10.0.0.0/24",
+          "VpcId" : { "Ref" : "VPC" },
+          "Tags" : [
+            { "Key" : "Name", "Value" : "Public A" }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "PublicSubnetB" : {
+        "Type" : "AWS::EC2::Subnet",
+        "Properties" : {
+          "AvailabilityZone" : { "Fn::Select" : [ "1", { "Fn::GetAZs" : "" } ] },
+          "CidrBlock" : "10.0.1.0/24",
+          "VpcId" : { "Ref" : "VPC" },
+          "Tags" : [
+            { "Key" : "Name", "Value" : "Public B" }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "InternetGateway" : {
+        "Type" : "AWS::EC2::InternetGateway"
+      },
+
+      "natGW0" : {
+        "DependsOn" : ["IGWAttachment", "EIP0"],
+        "Type" : "AWS::EC2::NatGateway",
+        "Properties" : {
+          "AllocationId" : { "Fn::GetAtt" : ["EIP0", "AllocationId"]},
+          "SubnetId" : { "Ref" : "PublicSubnetA"}
+        }
+      },
+
+      "natGW1" : {
+        "DependsOn" : ["IGWAttachment", "EIP1"],
+        "Type" : "AWS::EC2::NatGateway",
+        "Properties" : {
+          "AllocationId" : { "Fn::GetAtt" : ["EIP1", "AllocationId"]},
+          "SubnetId" : { "Ref" : "PublicSubnetB"}
+        }
+      },
+
+      "EIP0" : {
+        "Type" : "AWS::EC2::EIP",
+        "Properties" : {
+          "Domain" : "vpc"
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "EIP1" : {
+        "Type" : "AWS::EC2::EIP",
+        "Properties" : {
+          "Domain" : "vpc"
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "IGWAttachment" : {
+         "Type" : "AWS::EC2::VPCGatewayAttachment",
+         "Properties" : {
+           "VpcId" : { "Ref" : "VPC" },
+           "InternetGatewayId" : { "Ref" : "InternetGateway" }
+         },
+         "DependsOn" : [
+           "VPC",
+           "InternetGateway"
+         ]
+      },
+
+      "PublicRouteTable" : {
+        "Type" : "AWS::EC2::RouteTable",
+        "Properties" : {
+          "VpcId" : { "Ref" : "VPC" },
+          "Tags" : [
+            { "Key" : "Name", "Value" : "Public" }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "PublicRoute" : {
+        "Type" : "AWS::EC2::Route",
+        "Properties" : {
+          "RouteTableId" : { "Ref" : "PublicRouteTable" },
+          "DestinationCidrBlock" : "0.0.0.0/0",
+          "GatewayId" : { "Ref" : "InternetGateway" }
+        },
+        "DependsOn" : [
+          "IGWAttachment",
+          "PublicRouteTable"
+        ]
+      },
+
+      "PublicSubnetARouteTableAssociation" : {
+        "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties" : {
+          "SubnetId" : { "Ref" : "PublicSubnetA" },
+          "RouteTableId" : { "Ref" : "PublicRouteTable" }
+        },
+        "DependsOn" : [
+          "PublicSubnetA",
+          "PublicRouteTable"
+        ]
+      },
+
+      "PublicSubnetBRouteTableAssociation" : {
+        "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties" : {
+          "SubnetId" : { "Ref" : "PublicSubnetB" },
+          "RouteTableId" : { "Ref" : "PublicRouteTable" }
+        },
+        "DependsOn" : [
+          "PublicSubnetB",
+          "PublicRouteTable"
+        ]
+      },
+
+      "PrivateSubnetA" : {
+        "Type" : "AWS::EC2::Subnet",
+        "Properties" : {
+          "AvailabilityZone" : { "Fn::Select" : [ "0", { "Fn::GetAZs" : "" } ] },
+          "CidrBlock" : "10.0.2.0/24",
+          "VpcId" : { "Ref" : "VPC" },
+          "Tags" : [
+            { "Key" : "Name", "Value" : "Private A" }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "PrivateSubnetA1" : {
+        "Type" : "AWS::EC2::Subnet",
+        "Properties" : {
+          "AvailabilityZone" : { "Fn::Select" : [ "0", { "Fn::GetAZs" : "" } ] },
+          "CidrBlock" : "10.0.3.0/24",
+          "VpcId" : { "Ref" : "VPC" },
+          "Tags" : [
+            { "Key" : "Name", "Value" : "Private A1" }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "PrivateSubnetB" : {
+        "Type" : "AWS::EC2::Subnet",
+        "Properties" : {
+          "AvailabilityZone" : { "Fn::Select" : [ "1", { "Fn::GetAZs" : "" } ] },
+          "CidrBlock" : "10.0.4.0/24",
+          "VpcId" : { "Ref" : "VPC" },
+          "Tags" : [
+            { "Key" : "Name", "Value" : "Private B" }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "PrivateSubnetB1" : {
+        "Type" : "AWS::EC2::Subnet",
+        "Properties" : {
+          "AvailabilityZone" : { "Fn::Select" : [ "1", { "Fn::GetAZs" : "" } ] },
+          "CidrBlock" : "10.0.5.0/24",
+          "VpcId" : { "Ref" : "VPC" },
+          "Tags" : [
+            { "Key" : "Name", "Value" : "Private B1" }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "PrivateRouteA" : {
+        "Type" : "AWS::EC2::Route",
+        "Properties" : {
+          "RouteTableId" : { "Ref" : "PrivateRouteTableA" },
+          "DestinationCidrBlock" : "0.0.0.0/0",
+          "NatGatewayId" : { "Ref" : "natGW0" }
+        },
+        "DependsOn" : [
+          "IGWAttachment",
+          "PrivateRouteTableA",
+          "natGW0"
+        ]
+      },
+
+      "PrivateRouteA1" : {
+        "Type" : "AWS::EC2::Route",
+        "Properties" : {
+          "RouteTableId" : { "Ref" : "PrivateRouteTableA1" },
+          "DestinationCidrBlock" : "0.0.0.0/0",
+          "NatGatewayId" : { "Ref" : "natGW0" }
+        },
+        "DependsOn" : [
+          "IGWAttachment",
+          "PrivateRouteTableA",
+          "natGW0"
+        ]
+      },
+
+      "PrivateRouteB" : {
+        "Type" : "AWS::EC2::Route",
+        "Properties" : {
+          "RouteTableId" : { "Ref" : "PrivateRouteTableB" },
+          "DestinationCidrBlock" : "0.0.0.0/0",
+          "NatGatewayId" : { "Ref" : "natGW1" }
+        },
+        "DependsOn" : [
+          "IGWAttachment",
+          "PrivateRouteTableB",
+          "natGW1"
+        ]
+      },
+
+      "PrivateRouteB1" : {
+        "Type" : "AWS::EC2::Route",
+        "Properties" : {
+          "RouteTableId" : { "Ref" : "PrivateRouteTableB1" },
+          "DestinationCidrBlock" : "0.0.0.0/0",
+          "NatGatewayId" : { "Ref" : "natGW1" }
+        },
+        "DependsOn" : [
+          "IGWAttachment",
+          "PrivateRouteTableB",
+          "natGW1"
+        ]
+      },
+
+      "PrivateRouteTableA" : {
+        "Type" : "AWS::EC2::RouteTable",
+        "Properties" : {
+          "VpcId" : { "Ref" : "VPC" },
+          "Tags" : [
+            { "Key" : "Name", "Value" : "Private A" }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "PrivateRouteTableA1" : {
+        "Type" : "AWS::EC2::RouteTable",
+        "Properties" : {
+          "VpcId" : { "Ref" : "VPC" },
+          "Tags" : [
+            { "Key" : "Name", "Value" : "Private A1" }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "PrivateRouteTableB" : {
+        "Type" : "AWS::EC2::RouteTable",
+        "Properties" : {
+          "VpcId" : { "Ref" : "VPC" },
+          "Tags" : [
+            { "Key" : "Name", "Value" : "Private B" }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "PrivateRouteTableB1" : {
+        "Type" : "AWS::EC2::RouteTable",
+        "Properties" : {
+          "VpcId" : { "Ref" : "VPC" },
+          "Tags" : [
+            { "Key" : "Name", "Value" : "Private B1" }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "PrivateSubnetARouteTableAssociation" : {
+        "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties" : {
+          "SubnetId" : { "Ref" : "PrivateSubnetA" },
+          "RouteTableId" : { "Ref" : "PrivateRouteTableA" }
+        },
+        "DependsOn" : [
+          "PrivateSubnetA",
+          "PrivateRouteTableA"
+        ]
+      },
+
+      "PrivateSubnetA1RouteTableAssociation" : {
+        "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties" : {
+          "SubnetId" : { "Ref" : "PrivateSubnetA1" },
+          "RouteTableId" : { "Ref" : "PrivateRouteTableA1" }
+        },
+        "DependsOn" : [
+          "PrivateSubnetA1",
+          "PrivateRouteTableA1"
+        ]
+      },
+
+      "PrivateSubnetBRouteTableAssociation" : {
+        "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties" : {
+          "SubnetId" : { "Ref" : "PrivateSubnetB" },
+          "RouteTableId" : { "Ref" : "PrivateRouteTableB" }
+        },
+        "DependsOn" : [
+          "PrivateSubnetB",
+          "PrivateRouteTableB"
+        ]
+      },
+
+      "PrivateSubnetB1RouteTableAssociation" : {
+        "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties" : {
+          "SubnetId" : { "Ref" : "PrivateSubnetB1" },
+          "RouteTableId" : { "Ref" : "PrivateRouteTableB1" }
+        },
+        "DependsOn" : [
+          "PrivateSubnetB1",
+          "PrivateRouteTableB1"
+        ]
+      },
+
+      "DBSubnetGroup" : {
+        "Type" : "AWS::RDS::DBSubnetGroup",
+        "Properties" : {
+          "DBSubnetGroupDescription" : "RDS Subnets Group",
+          "SubnetIds" : [
+            { "Ref" : "PrivateSubnetA1"},
+            { "Ref" : "PrivateSubnetB1"}
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "DBEC2SecurityGroup": {
+        "Type": "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupDescription": "Allow Traffic from EC2",
+          "SecurityGroupIngress" : [ {
+            "IpProtocol" : "tcp",
+            "FromPort" : "3306",
+            "ToPort" : "3306",
+            "CidrIp" : "0.0.0.0/0"
+          } ],
+          "SecurityGroupEgress" : [ {
+            "IpProtocol" : "tcp",
+            "FromPort" : "3306",
+            "ToPort" : "3306",
+            "CidrIp" : "0.0.0.0/0"
+          } ],
+          "VpcId" : { "Ref" : "VPC" }
+        },
+        "DependsOn" : [
+          "VPC"
+        ]
+      },
+
+      "MySQLDatabase": {
+        "Type": "AWS::RDS::DBInstance",
+        "Properties": {
+          "AllocatedStorage": { "Ref" : "DBStorage" },
+          "DBInstanceClass": { "Ref" : "DBInstanceClass" },
+          "DBSubnetGroupName" : { "Ref" : "DBSubnetGroup" },
+          "DBName" : { "Ref": "DBName" },
+          "MasterUsername": { "Ref": "DBUser" },
+          "MasterUserPassword": { "Ref" : "DBPassword" },
+          "Engine" : "MySQL",
+          "MultiAZ" : "true",
+          "EnableCloudwatchLogsExports" : ["audit", "error", "general", "slowquery"],
+          "VPCSecurityGroups" : [ { "Fn::GetAtt": [ "DBEC2SecurityGroup", "GroupId" ] } ]
+        },
+        "DeletionPolicy": "Snapshot",
+        "DependsOn" : [
+          "PrivateSubnetA",
+          "PrivateSubnetB",
+          "DBSubnetGroup",
+          "DBEC2SecurityGroup"
+        ]
+      },
+
+      "ApplicationLoadBalancer" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer",
+        "Properties" : {
+          "SecurityGroups": [
+              { "Ref": "ELBSecurityGroup" }
+          ],
+          "LoadBalancerAttributes" : [
+            {
+              "Key" : "access_logs.s3.enabled",
+              "Value" : "true"
+            },
+            {
+              "Key" : "access_logs.s3.bucket",
+              "Value" : { "Ref" : "S3Logging"}
+            },
+            {
+              "Key" : "access_logs.s3.prefix",
+              "Value" : "IFALB"
+            }
+
+          ],
+          "Subnets" : [
+            { "Ref" : "PublicSubnetA" },
+            { "Ref" : "PublicSubnetB" }
+          ]
+        },
+
+        "DependsOn" : [
+          "PublicSubnetA",
+          "PublicSubnetB",
+          "PrivateSubnetA",
+          "PrivateSubnetB",
+          "IGWAttachment",
+          "MySQLDatabase",
+          "natGW0", "natGW1"
+        ]
+      },
+
+      "S3Logging": {
+        "Type": "AWS::S3::Bucket",
+        "Properties": {
+            "AccessControl": "Private",
+            "VersioningConfiguration": {
+                "Status": "Enabled"
+            },
+            "LifecycleConfiguration": {
+                "Rules": [
+                    {
+                        "Id": "MyLoggingArchive",
+                        "Status": "Enabled",
+                        "ExpirationInDays": "365",
+                        "Transition": {
+                            "TransitionInDays": "60",
+                            "StorageClass": "GLACIER"
+                        }
+                    }
+                ]
+            }
+        },
+        "DeletionPolicy": "Retain"
+    },
+
+    "S3LoggingPolicy": {
+        "Type": "AWS::S3::BucketPolicy",
+        "Properties": {
+            "Bucket": {
+                "Ref": "S3Logging"
+            },
+            "PolicyDocument": {
+                "Statement": [
+                    {
+                        "Sid": "AllowLogsObjectUploads",
+                        "Effect": "Allow",
+                        "Action": "s3:PutObject",
+                        "Resource": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "arn:aws:s3:::",
+                                    {
+                                        "Ref": "S3Logging"
+                                    },
+                                    "/*"
+                                ]
+                            ]
+                        },
+                        "Principal": {
+                            "AWS": "*"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+
+      "myDNS" : {
+        "Type" : "AWS::Route53::RecordSetGroup",
+        "Properties" : {
+          "HostedZoneName" : { "Fn::Join" : ["",[{ "Ref" : "Domain" },"." ] ] },
+          "Comment" : "Zone apex alias targeted to myELB LoadBalancer.",
+          "RecordSets" : [
+            {
+                "Name" : { "Ref" : "Domain" },
+                "Type" : "A",
+                "AliasTarget" : {
+                    "HostedZoneId" : { "Fn::GetAtt" : ["ApplicationLoadBalancer", "CanonicalHostedZoneID"] },
+                    "DNSName" : { "Fn::GetAtt" : ["ApplicationLoadBalancer","DNSName"] }
+                }
+              },
+            {
+                "Name" : { "Fn::Join" : ["",[ "www.", { "Ref" : "Domain" } ] ] },
+                "Type" : "A",
+                "AliasTarget" : {
+                    "HostedZoneId" : { "Fn::GetAtt" : ["ApplicationLoadBalancer", "CanonicalHostedZoneID"] },
+                    "DNSName" : { "Fn::GetAtt" : ["ApplicationLoadBalancer","DNSName"] }
+                }
+              }
+          ]
+        },
+        "DependsOn" : [
+            "ApplicationLoadBalancer"
+          ]
+      },
+
+
+
+      "WebACLAssociation": {
+        "Type": "AWS::WAFv2::WebACLAssociation",
+        "Properties": {
+        "WebACLArn": "arn:aws:wafv2:us-west-1:066724418324:regional/webacl/ACL/606d9964-be11-43fb-baf5-5fd9276e0922",
+        "ResourceArn": { "Ref" : "ApplicationLoadBalancer" }
+        },
+        "DependsOn" : [
+          "ApplicationLoadBalancer"
+        ]
+      },
+
+      "ApplicationLoadBalancer1" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer",
+        "Properties" : {
+          "SecurityGroups": [
+              { "Ref": "ELBSecurityGroup" }
+          ],
+          "Subnets" : [
+            { "Ref" : "PublicSubnetA" },
+            { "Ref" : "PublicSubnetB" }
+          ]
+        },
+        "DependsOn" : [
+          "PublicSubnetA",
+          "PublicSubnetB",
+          "PrivateSubnetA1",
+          "PrivateSubnetB1",
+          "IGWAttachment",
+          "MySQLDatabase",
+          "natGW0", "natGW1"
+        ]
+      },
+
+      "ALBListener" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::Listener",
+        "Properties" : {
+          "DefaultActions" : [{
+            "Type" : "forward",
+            "TargetGroupArn" : { "Ref" : "ALBTargetGroup" }
+          }],
+          "Certificates": [
+            {
+                "CertificateArn": { "Ref" : "CertificateARN" }
+            }
+        ],
+          "LoadBalancerArn" : { "Ref" : "ApplicationLoadBalancer" },
+          "Port" : "443",
+          "Protocol" : "HTTPS"
+        }
+      },
+
+      "ALBListenerRule": {
+
+        "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+        "Condition": "Activate1",
+        "Properties": {
+            "Actions": [
+                {
+                    "Type": "forward",
+                    "TargetGroupArn": {
+                        "Ref": "ALBTargetGroup"
+                    }
+                }
+            ],
+            "Conditions": [
+                {
+                    "Field": "path-pattern",
+                    "Values": { "Ref" : "LoadBalancerPath"}
+                }
+            ],
+            "ListenerArn": {"Ref": "ALBListener"},
+            "Priority":1
+          }
+      },
+
+      "ALBRedirectListener" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::Listener",
+        "Properties" : {
+          "DefaultActions" : [{
+            "Type" : "redirect",
+            "RedirectConfig": {
+                "Host": "#{host}",
+                "Path": "/#{path}",
+                "Port": 443,
+                "Protocol": "HTTPS",
+                "Query": "#{query}",
+                "StatusCode": "HTTP_301"
+            }
+          }],
+          "LoadBalancerArn" : { "Ref" : "ApplicationLoadBalancer" },
+          "Port" : "80",
+          "Protocol" : "HTTP"
+        }
+      },
+
+
+      "ALBListener1" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::Listener",
+        "Properties" : {
+          "DefaultActions" : [{
+            "Type" : "fixed-response",
+            "FixedResponseConfig" : {
+                "StatusCode" : "404"
+            }
+          }
+        ],
+          "LoadBalancerArn" : { "Ref" : "ApplicationLoadBalancer1" },
+          "Port" : "80",
+          "Protocol" : "HTTP"
+        }
+      },
+
+      "CListenerRule": {
+
+        "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+        "Condition": "Activate1",
+        "Properties": {
+            "Actions": [
+                {
+                    "Type": "forward",
+                    "TargetGroupArn": {
+                        "Ref": "CALBTargetGroup"
+                    }
+                }
+            ],
+            "Conditions": [
+                {
+                    "Field": "path-pattern",
+                    "Values": { "Ref" : "LoadBalancerPath1"}
+                }
+            ],
+            "ListenerArn": {"Ref": "ALBListener1"},
+            "Priority":4
+          }
+      },
+
+      "RListenerRule": {
+
+          "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+          "Condition": "Activate2",
+          "Properties": {
+              "Actions": [
+                  {
+                      "Type": "forward",
+                      "TargetGroupArn": {
+                          "Ref": "RALBTargetGroup"
+                      }
+                  }
+              ],
+              "Conditions": [
+                  {
+                      "Field": "path-pattern",
+                      "Values": { "Ref" : "LoadBalancerPath2" }
+                  }
+              ],
+              "ListenerArn": {"Ref": "ALBListener1"},
+              "Priority":3
+            }
+      },
+
+      "UListenerRule": {
+            "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+            "Condition": "Activate3",
+            "Properties": {
+                "Actions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "UALBTargetGroup"
+                        }
+                    }
+                ],
+                "Conditions": [
+                    {
+                        "Field": "path-pattern",
+                        "Values": { "Ref" : "LoadBalancerPath3" }
+                    }
+                ],
+                "ListenerArn": {"Ref": "ALBListener1"},
+                "Priority":2
+              }
+
+      },
+
+      "DListenerRule": {
+              "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+              "Condition": "Activate4",
+              "Properties": {
+                  "Actions": [
+                      {
+                          "Type": "forward",
+                          "TargetGroupArn": {
+                              "Ref": "DALBTargetGroup"
+                          }
+                      }
+                  ],
+                  "Conditions": [
+                      {
+                          "Field": "path-pattern",
+                          "Values": { "Ref" : "LoadBalancerPath4" }
+                      }
+                  ],
+                  "ListenerArn": {"Ref": "ALBListener1"},
+                  "Priority":1
+                }
+      },
+
+      "ALBTargetGroup" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "Properties" : {
+          "HealthCheckEnabled" : "true",
+          "HealthCheckIntervalSeconds" : 10,
+          "HealthCheckTimeoutSeconds" : 5,
+          "HealthCheckPath" : { "Ref": "EC2ASHealthCheckPath" },
+          "HealthCheckPort" : { "Ref": "EC2ASHealthCheckPort" },
+          "HealthyThresholdCount" : 2,
+          "Port" : 80,
+          "Protocol" : "HTTP",
+          "UnhealthyThresholdCount" : 5,
+          "VpcId" : {"Ref" : "VPC"},
+          "TargetGroupAttributes" :
+            [ { "Key" : "stickiness.enabled", "Value" : "true" },
+              { "Key" : "stickiness.type", "Value" : "lb_cookie" },
+              { "Key" : "stickiness.lb_cookie.duration_seconds", "Value" : "30" }
+          ]
+        }
+      },
+
+
+      "CALBTargetGroup" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "Condition": "Activate1",
+        "Properties" : {
+          "HealthCheckEnabled" : "true",
+          "HealthCheckIntervalSeconds" : 10,
+          "HealthCheckTimeoutSeconds" : 5,
+          "HealthCheckPath" : { "Ref": "BackendEC2ASHealthCheckPath1" },
+          "HealthCheckPort" : { "Ref": "BackendEC2ASHealthCheckPort1" },
+          "HealthyThresholdCount" : 2,
+          "Port" : 80,
+          "Protocol" : "HTTP",
+          "UnhealthyThresholdCount" : 5,
+          "VpcId" : {"Ref" : "VPC"},
+          "TargetGroupAttributes" :
+            [ { "Key" : "stickiness.enabled", "Value" : "true" },
+              { "Key" : "stickiness.type", "Value" : "lb_cookie" },
+              { "Key" : "stickiness.lb_cookie.duration_seconds", "Value" : "30" }
+          ]
+        }
+      },
+
+      "UALBTargetGroup" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "Condition": "Activate2",
+        "Properties" : {
+          "HealthCheckEnabled" : "true",
+          "HealthCheckIntervalSeconds" : 10,
+          "HealthCheckTimeoutSeconds" : 5,
+          "HealthCheckPath" : { "Ref": "BackendEC2ASHealthCheckPath3" },
+          "HealthCheckPort" : { "Ref": "BackendEC2ASHealthCheckPort3" },
+          "HealthyThresholdCount" : 2,
+          "Port" : 80,
+          "Protocol" : "HTTP",
+          "UnhealthyThresholdCount" : 5,
+          "VpcId" : {"Ref" : "VPC"},
+          "TargetGroupAttributes" :
+            [ { "Key" : "stickiness.enabled", "Value" : "true" },
+              { "Key" : "stickiness.type", "Value" : "lb_cookie" },
+              { "Key" : "stickiness.lb_cookie.duration_seconds", "Value" : "30" }
+          ]
+        }
+      },
+
+      "RALBTargetGroup" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "Condition": "Activate3",
+        "Properties" : {
+          "HealthCheckEnabled" : "true",
+          "HealthCheckIntervalSeconds" : 10,
+          "HealthCheckTimeoutSeconds" : 5,
+          "HealthCheckPath" : { "Ref": "BackendEC2ASHealthCheckPath2" },
+          "HealthCheckPort" : { "Ref": "BackendEC2ASHealthCheckPort2" },
+          "HealthyThresholdCount" : 2,
+          "Port" : 80,
+          "Protocol" : "HTTP",
+          "UnhealthyThresholdCount" : 5,
+          "VpcId" : {"Ref" : "VPC"},
+          "TargetGroupAttributes" :
+            [ { "Key" : "stickiness.enabled", "Value" : "true" },
+              { "Key" : "stickiness.type", "Value" : "lb_cookie" },
+              { "Key" : "stickiness.lb_cookie.duration_seconds", "Value" : "30" }
+          ]
+        }
+      },
+
+      "DALBTargetGroup" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "Condition": "Activate4",
+        "Properties" : {
+          "HealthCheckEnabled" : "true",
+          "HealthCheckIntervalSeconds" : 10,
+          "HealthCheckTimeoutSeconds" : 5,
+          "HealthCheckPath" : { "Ref": "BackendEC2ASHealthCheckPath4" },
+          "HealthCheckPort" : { "Ref": "BackendEC2ASHealthCheckPort4" },
+          "HealthyThresholdCount" : 2,
+          "Port" : 80,
+          "Protocol" : "HTTP",
+          "UnhealthyThresholdCount" : 5,
+          "VpcId" : {"Ref" : "VPC"},
+          "TargetGroupAttributes" :
+            [ { "Key" : "stickiness.enabled", "Value" : "true" },
+              { "Key" : "stickiness.type", "Value" : "lb_cookie" },
+              { "Key" : "stickiness.lb_cookie.duration_seconds", "Value" : "30" }
+          ]
+        }
+      },
+
+      "EC2Instance": {
+        "Type": "AWS::EC2::Instance",
+        "Properties": {
+            "ImageId": "ami-0cc3ba89e0affab1b",
+            "InstanceInitiatedShutdownBehavior": "stop",
+            "InstanceType": "t2.micro",
+
+            "Monitoring": "true",
+            "NetworkInterfaces": [
+                {
+                    "AssociatePublicIpAddress": "true",
+                    "DeviceIndex": "0",
+                    "GroupSet": [
+                        {
+                            "Ref": "EC2SecurityGroup"
+                        }
+                    ],
+                    "SubnetId": {
+                        "Ref": "PrivateSubnetA1"
+                    }
+                }
+            ],
+            "Tenancy": "default"
+        }
+    },
+
+      "EC2ASGroup" : {
+        "Type" : "AWS::AutoScaling::AutoScalingGroup",
+        "Properties" : {
+          "VPCZoneIdentifier" : [
+            { "Ref" : "PrivateSubnetA" },
+            { "Ref" : "PrivateSubnetB" }
+          ],
+          "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
+          "MinSize" : { "Ref" : "EC2CapacityMin" },
+          "MaxSize" : { "Ref" : "EC2CapacityMax" },
+          "DesiredCapacity" : { "Ref" : "EC2Capacity" },
+          "TargetGroupARNs" : [ { "Ref" : "ALBTargetGroup" } ],
+          "NotificationConfigurations" : [{
+            "TopicARN" : { "Ref" : "SNSTopic" },
+            "NotificationTypes" : [
+              "autoscaling:EC2_INSTANCE_LAUNCH",
+              "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+              "autoscaling:EC2_INSTANCE_TERMINATE_ERROR"
+            ]
+          }]
+        },
+        "CreationPolicy" : {
+          "ResourceSignal" : {
+            "Timeout" : "PT7M",
+            "Count"   : { "Ref" : "EC2Capacity" }
+          }
+        },
+        "UpdatePolicy": {
+          "AutoScalingRollingUpdate": {
+            "MinInstancesInService": "1",
+            "MaxBatchSize": "1",
+            "PauseTime" : "PT15M",
+            "WaitOnResourceSignals": "true"
+          }
+        },
+        "DependsOn" : [
+            "PrivateSubnetA", "PrivateSubnetB", "PrivateRouteA", "PrivateRouteB", "natGW0", "natGW1"
+        ]
+      },
+
+      "CEC2Group" : {
+        "Type" : "AWS::AutoScaling::AutoScalingGroup",
+        "Condition": "Activate1",
+        "Properties" : {
+          "VPCZoneIdentifier" : [
+            { "Ref" : "PrivateSubnetA1" },
+            { "Ref" : "PrivateSubnetB1" }
+          ],
+          "LaunchConfigurationName" : { "Ref" : "CLaunchConfig" },
+          "MinSize" : { "Ref" : "BackendEC2CapacityMin1" },
+          "MaxSize" : { "Ref" : "BackendEC2CapacityMax1" },
+          "DesiredCapacity" : { "Ref" : "BackendEC2Capacity1" },
+          "TargetGroupARNs" : [ { "Ref" : "CALBTargetGroup" } ],
+          "NotificationConfigurations" : [{
+            "TopicARN" : { "Ref" : "SNSTopic" },
+            "NotificationTypes" : [
+              "autoscaling:EC2_INSTANCE_LAUNCH",
+              "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+              "autoscaling:EC2_INSTANCE_TERMINATE_ERROR"
+            ]
+          }]
+        },
+        "CreationPolicy" : {
+          "ResourceSignal" : {
+            "Timeout" : "PT7M",
+            "Count"   : { "Ref" : "BackendEC2Capacity1" }
+          }
+        },
+        "UpdatePolicy": {
+          "AutoScalingRollingUpdate": {
+            "MinInstancesInService": "1",
+            "MaxBatchSize": "1",
+            "PauseTime" : "PT15M",
+            "WaitOnResourceSignals": "true"
+          }
+        },
+        "DependsOn" : [
+            "PrivateSubnetA1", "PrivateSubnetB1", "PrivateRouteA1", "PrivateRouteB1", "natGW0", "natGW1"
+        ]
+      },
+
+      "REC2Group" : {
+        "Type" : "AWS::AutoScaling::AutoScalingGroup",
+        "Condition": "Activate2",
+        "Properties" : {
+          "VPCZoneIdentifier" : [
+            { "Ref" : "PrivateSubnetA1" },
+            { "Ref" : "PrivateSubnetB1" }
+          ],
+          "LaunchConfigurationName" : { "Ref" : "RLaunchConfig" },
+          "MinSize" : { "Ref" : "BackendEC2CapacityMin2" },
+          "MaxSize" : { "Ref" : "BackendEC2CapacityMax2" },
+          "DesiredCapacity" : { "Ref" : "BackendEC2Capacity2" },
+          "TargetGroupARNs" : [ { "Ref" : "RALBTargetGroup" } ],
+          "NotificationConfigurations" : [{
+            "TopicARN" : { "Ref" : "SNSTopic" },
+            "NotificationTypes" : [
+              "autoscaling:EC2_INSTANCE_LAUNCH",
+              "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+              "autoscaling:EC2_INSTANCE_TERMINATE_ERROR"
+            ]
+          }]
+        },
+        "CreationPolicy" : {
+          "ResourceSignal" : {
+            "Timeout" : "PT7M",
+            "Count"   : { "Ref" : "BackendEC2Capacity2" }
+          }
+        },
+        "UpdatePolicy": {
+          "AutoScalingRollingUpdate": {
+            "MinInstancesInService": "1",
+            "MaxBatchSize": "1",
+            "PauseTime" : "PT15M",
+            "WaitOnResourceSignals": "true"
+          }
+        },
+        "DependsOn" : [
+            "PrivateSubnetA1", "PrivateSubnetB1", "PrivateRouteA1", "PrivateRouteB1", "natGW0", "natGW1"
+        ]
+      },
+
+      "UEC2Group" : {
+        "Type" : "AWS::AutoScaling::AutoScalingGroup",
+        "Condition": "Activate3",
+        "Properties" : {
+          "VPCZoneIdentifier" : [
+            { "Ref" : "PrivateSubnetA1" },
+            { "Ref" : "PrivateSubnetB1" }
+          ],
+          "LaunchConfigurationName" : { "Ref" : "ULaunchConfig" },
+          "MinSize" : { "Ref" : "BackendEC2CapacityMin3" },
+          "MaxSize" : { "Ref" : "BackendEC2CapacityMax3" },
+          "DesiredCapacity" : { "Ref" : "BackendEC2Capacity3" },
+          "TargetGroupARNs" : [ { "Ref" : "UALBTargetGroup" } ],
+          "NotificationConfigurations" : [{
+            "TopicARN" : { "Ref" : "SNSTopic" },
+            "NotificationTypes" : [
+              "autoscaling:EC2_INSTANCE_LAUNCH",
+              "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+              "autoscaling:EC2_INSTANCE_TERMINATE_ERROR"
+            ]
+          }]
+        },
+        "CreationPolicy" : {
+          "ResourceSignal" : {
+            "Timeout" : "PT7M",
+            "Count"   : { "Ref" : "BackendEC2Capacity3" }
+          }
+        },
+        "UpdatePolicy": {
+          "AutoScalingRollingUpdate": {
+            "MinInstancesInService": "1",
+            "MaxBatchSize": "1",
+            "PauseTime" : "PT15M",
+            "WaitOnResourceSignals": "true"
+          }
+        },
+        "DependsOn" : [
+            "PrivateSubnetA1", "PrivateSubnetB1", "PrivateRouteA1", "PrivateRouteB1", "natGW0", "natGW1"
+        ]
+      },
+
+      "DEC2Group" : {
+        "Type" : "AWS::AutoScaling::AutoScalingGroup",
+        "Condition": "Activate4",
+        "Properties" : {
+          "VPCZoneIdentifier" : [
+            { "Ref" : "PrivateSubnetA1" },
+            { "Ref" : "PrivateSubnetB1" }
+          ],
+          "LaunchConfigurationName" : { "Ref" : "DLaunchConfig" },
+          "MinSize" : { "Ref" : "BackendEC2CapacityMin4" },
+          "MaxSize" : { "Ref" : "BackendEC2CapacityMax4" },
+          "DesiredCapacity" : { "Ref" : "BackendEC2Capacity4" },
+          "TargetGroupARNs" : [ { "Ref" : "DALBTargetGroup" } ],
+          "NotificationConfigurations" : [{
+            "TopicARN" : { "Ref" : "SNSTopic" },
+            "NotificationTypes" : [
+              "autoscaling:EC2_INSTANCE_LAUNCH",
+              "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+              "autoscaling:EC2_INSTANCE_TERMINATE_ERROR"
+            ]
+          }]
+        },
+        "CreationPolicy" : {
+          "ResourceSignal" : {
+            "Timeout" : "PT7M",
+            "Count"   : { "Ref" : "BackendEC2Capacity4" }
+          }
+        },
+        "UpdatePolicy": {
+          "AutoScalingRollingUpdate": {
+            "MinInstancesInService": "1",
+            "MaxBatchSize": "1",
+            "PauseTime" : "PT15M",
+            "WaitOnResourceSignals": "true"
+          }
+        },
+        "DependsOn" : [
+            "PrivateSubnetA1", "PrivateSubnetB1", "PrivateRouteA1", "PrivateRouteB1", "natGW0", "natGW1"
+        ]
+      },
+
+      "ELBSecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupDescription" : "Enable HTTP access on port 80",
+          "VpcId" : { "Ref" : "VPC" },
+          "SecurityGroupIngress" : [ {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+          },{
+            "IpProtocol" : "tcp",
+            "FromPort" : "443",
+            "ToPort" : "443",
+            "CidrIp" : "0.0.0.0/0"
+          } ],
+          "SecurityGroupEgress" : [ {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+          } ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "ELBSecurityGroup1" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupDescription" : "Enable HTTP access on port 80",
+          "VpcId" : { "Ref" : "VPC" },
+          "SecurityGroupIngress" : [ {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+          },{
+            "IpProtocol" : "tcp",
+            "FromPort" : "443",
+            "ToPort" : "443",
+            "CidrIp" : "0.0.0.0/0"
+          } ],
+          "SecurityGroupEgress" : [ {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+          } ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "SNSTopic": {
+        "Type": "AWS::SNS::Topic",
+        "Properties": {
+          "Subscription": [{
+            "Endpoint": { "Ref": "OpsEmail" },
+            "Protocol": "email"
+          }]
+        }
+      },
+
+      "EC2ScaleOutPolicy" : {
+        "Type" : "AWS::AutoScaling::ScalingPolicy",
+        "Properties" : {
+          "AdjustmentType" : "ChangeInCapacity",
+          "AutoScalingGroupName" : { "Ref" : "EC2ASGroup" },
+          "Cooldown" : "60",
+          "ScalingAdjustment" : "1"
+        }
+      },
+
+      "CEC2ScaleOutPolicy" : {
+        "Type" : "AWS::AutoScaling::ScalingPolicy",
+        "Condition": "Activate1",
+        "Properties" : {
+          "AdjustmentType" : "ChangeInCapacity",
+          "AutoScalingGroupName" : { "Ref" : "CEC2Group" },
+          "Cooldown" : "60",
+          "ScalingAdjustment" : "1"
+        }
+      },
+
+      "REC2ScaleOutPolicy" : {
+        "Type" : "AWS::AutoScaling::ScalingPolicy",
+        "Condition": "Activate2",
+        "Properties" : {
+          "AdjustmentType" : "ChangeInCapacity",
+          "AutoScalingGroupName" : { "Ref" : "REC2Group" },
+          "Cooldown" : "60",
+          "ScalingAdjustment" : "1"
+        }
+      },
+
+      "UEC2ScaleOutPolicy" : {
+        "Type" : "AWS::AutoScaling::ScalingPolicy",
+        "Condition": "Activate3",
+        "Properties" : {
+          "AdjustmentType" : "ChangeInCapacity",
+          "AutoScalingGroupName" : { "Ref" : "UEC2Group" },
+          "Cooldown" : "60",
+          "ScalingAdjustment" : "1"
+        }
+      },
+
+      "DEC2ScaleOutPolicy" : {
+        "Type" : "AWS::AutoScaling::ScalingPolicy",
+        "Condition": "Activate4",
+        "Properties" : {
+          "AdjustmentType" : "ChangeInCapacity",
+          "AutoScalingGroupName" : { "Ref" : "DEC2Group" },
+          "Cooldown" : "60",
+          "ScalingAdjustment" : "1"
+        }
+      },
+
+      "EC2ScaleInPolicy" : {
+        "Type" : "AWS::AutoScaling::ScalingPolicy",
+        "Properties" : {
+          "AdjustmentType" : "ChangeInCapacity",
+          "AutoScalingGroupName" : { "Ref" : "EC2ASGroup" },
+          "Cooldown" : "60",
+          "ScalingAdjustment" : "-1"
+        }
+      },
+
+      "CEC2ScaleInPolicy" : {
+        "Type" : "AWS::AutoScaling::ScalingPolicy",
+        "Condition": "Activate1",
+        "Properties" : {
+          "AdjustmentType" : "ChangeInCapacity",
+          "AutoScalingGroupName" : { "Ref" : "CEC2Group" },
+          "Cooldown" : "60",
+          "ScalingAdjustment" : "-1"
+        }
+      },
+
+      "REC2ScaleInPolicy" : {
+        "Type" : "AWS::AutoScaling::ScalingPolicy",
+        "Condition": "Activate2",
+        "Properties" : {
+          "AdjustmentType" : "ChangeInCapacity",
+          "AutoScalingGroupName" : { "Ref" : "REC2Group" },
+          "Cooldown" : "60",
+          "ScalingAdjustment" : "-1"
+        }
+      },
+
+      "UEC2ScaleInPolicy" : {
+        "Type" : "AWS::AutoScaling::ScalingPolicy",
+        "Condition": "Activate3",
+        "Properties" : {
+          "AdjustmentType" : "ChangeInCapacity",
+          "AutoScalingGroupName" : { "Ref" : "UEC2Group" },
+          "Cooldown" : "60",
+          "ScalingAdjustment" : "-1"
+        }
+      },
+
+      "DEC2ScaleInPolicy" : {
+        "Type" : "AWS::AutoScaling::ScalingPolicy",
+        "Condition": "Activate4",
+        "Properties" : {
+          "AdjustmentType" : "ChangeInCapacity",
+          "AutoScalingGroupName" : { "Ref" : "DEC2Group" },
+          "Cooldown" : "60",
+          "ScalingAdjustment" : "-1"
+        }
+      },
+
+      "CPUHighAlarm": {
+       "Type": "AWS::CloudWatch::Alarm",
+       "Properties": {
+          "AlarmDescription": "Scale-Out when CPU Util. goes above ScaleOutCPUUtil",
+          "MetricName": "CPUUtilization",
+          "Namespace": "AWS/EC2",
+          "Statistic": "Average",
+          "Period": { "Ref": "EC2ASPeriod" },
+          "EvaluationPeriods": "2",
+          "Threshold": { "Ref": "ScaleOutCPUUtil" },
+          "AlarmActions": [ { "Ref": "EC2ScaleOutPolicy" } ],
+          "Dimensions": [
+            {
+              "Name": "AutoScalingGroupName",
+              "Value": { "Ref": "EC2ASGroup" }
+            }
+          ],
+          "ComparisonOperator": "GreaterThanThreshold"
+        }
+      },
+
+      "CPULowAlarm": {
+       "Type": "AWS::CloudWatch::Alarm",
+       "Properties": {
+          "AlarmDescription": "Scale In when CPU Util. goes below ScaleInCPUUtil",
+          "MetricName": "CPUUtilization",
+          "Namespace": "AWS/EC2",
+          "Statistic": "Average",
+          "Period": { "Ref": "EC2ASPeriod" },
+          "EvaluationPeriods": "2",
+          "Threshold": { "Ref": "ScaleInCPUUtil" },
+          "AlarmActions": [ { "Ref": "EC2ScaleInPolicy" } ],
+          "Dimensions": [
+            {
+              "Name": "AutoScalingGroupName",
+              "Value": { "Ref": "EC2ASGroup" }
+            }
+          ],
+          "ComparisonOperator": "LessThanThreshold"
+        }
+      },
+
+      "CCPUHighAlarm": {
+        "Type": "AWS::CloudWatch::Alarm",
+        "Condition": "Activate1",
+        "Properties": {
+           "AlarmDescription": "Scale-Out when CPU Util. goes above ScaleOutCPUUtil",
+           "MetricName": "CPUUtilization",
+           "Namespace": "AWS/EC2",
+           "Statistic": "Average",
+           "Period": { "Ref": "BackendEC2ASPeriod1" },
+           "EvaluationPeriods": "2",
+           "Threshold": { "Ref": "BackendScaleOutCPUUtil1" },
+           "AlarmActions": [ { "Ref": "CEC2ScaleOutPolicy" } ],
+           "Dimensions": [
+             {
+               "Name": "AutoScalingGroupName",
+               "Value": { "Ref": "CEC2Group" }
+             }
+           ],
+           "ComparisonOperator": "GreaterThanThreshold"
+         }
+       },
+
+       "CCPULowAlarm": {
+        "Type": "AWS::CloudWatch::Alarm",
+        "Condition": "Activate1",
+        "Properties": {
+           "AlarmDescription": "Scale In when CPU Util. goes below ScaleInCPUUtil",
+           "MetricName": "CPUUtilization",
+           "Namespace": "AWS/EC2",
+           "Statistic": "Average",
+           "Period": { "Ref": "BackendEC2ASPeriod1" },
+           "EvaluationPeriods": "2",
+           "Threshold": { "Ref": "BackendScaleInCPUUtil1" },
+           "AlarmActions": [ { "Ref": "CEC2ScaleInPolicy" } ],
+           "Dimensions": [
+             {
+               "Name": "AutoScalingGroupName",
+               "Value": { "Ref": "CEC2Group" }
+             }
+           ],
+           "ComparisonOperator": "LessThanThreshold"
+         }
+       },
+
+       "RCPUHighAlarm": {
+        "Type": "AWS::CloudWatch::Alarm",
+        "Condition": "Activate2",
+        "Properties": {
+           "AlarmDescription": "Scale-Out when CPU Util. goes above ScaleOutCPUUtil",
+           "MetricName": "CPUUtilization",
+           "Namespace": "AWS/EC2",
+           "Statistic": "Average",
+           "Period": { "Ref": "BackendEC2ASPeriod2" },
+           "EvaluationPeriods": "2",
+           "Threshold": { "Ref": "BackendScaleOutCPUUtil2" },
+           "AlarmActions": [ { "Ref": "REC2ScaleOutPolicy" } ],
+           "Dimensions": [
+             {
+               "Name": "AutoScalingGroupName",
+               "Value": { "Ref": "REC2Group" }
+             }
+           ],
+           "ComparisonOperator": "GreaterThanThreshold"
+         }
+       },
+
+       "RCPULowAlarm": {
+        "Type": "AWS::CloudWatch::Alarm",
+        "Condition": "Activate2",
+        "Properties": {
+           "AlarmDescription": "Scale In when CPU Util. goes below ScaleInCPUUtil",
+           "MetricName": "CPUUtilization",
+           "Namespace": "AWS/EC2",
+           "Statistic": "Average",
+           "Period": { "Ref": "BackendEC2ASPeriod2" },
+           "EvaluationPeriods": "2",
+           "Threshold": { "Ref": "BackendScaleInCPUUtil2" },
+           "AlarmActions": [ { "Ref": "REC2ScaleInPolicy" } ],
+           "Dimensions": [
+             {
+               "Name": "AutoScalingGroupName",
+               "Value": { "Ref": "REC2Group" }
+             }
+           ],
+           "ComparisonOperator": "LessThanThreshold"
+         }
+       },
+
+       "UCPUHighAlarm": {
+        "Type": "AWS::CloudWatch::Alarm",
+        "Condition": "Activate3",
+        "Properties": {
+           "AlarmDescription": "Scale-Out when CPU Util. goes above ScaleOutCPUUtil",
+           "MetricName": "CPUUtilization",
+           "Namespace": "AWS/EC2",
+           "Statistic": "Average",
+           "Period": { "Ref": "BackendEC2ASPeriod3" },
+           "EvaluationPeriods": "2",
+           "Threshold": { "Ref": "BackendScaleOutCPUUtil3" },
+           "AlarmActions": [ { "Ref": "UEC2ScaleOutPolicy" } ],
+           "Dimensions": [
+             {
+               "Name": "AutoScalingGroupName",
+               "Value": { "Ref": "UEC2Group" }
+             }
+           ],
+           "ComparisonOperator": "GreaterThanThreshold"
+         }
+       },
+
+       "UCPULowAlarm": {
+        "Type": "AWS::CloudWatch::Alarm",
+        "Condition": "Activate3",
+        "Properties": {
+           "AlarmDescription": "Scale In when CPU Util. goes below ScaleInCPUUtil",
+           "MetricName": "CPUUtilization",
+           "Namespace": "AWS/EC2",
+           "Statistic": "Average",
+           "Period": { "Ref": "BackendEC2ASPeriod3" },
+           "EvaluationPeriods": "2",
+           "Threshold": { "Ref": "BackendScaleInCPUUtil3" },
+           "AlarmActions": [ { "Ref": "UEC2ScaleInPolicy" } ],
+           "Dimensions": [
+             {
+               "Name": "AutoScalingGroupName",
+               "Value": { "Ref": "UEC2Group" }
+             }
+           ],
+           "ComparisonOperator": "LessThanThreshold"
+         }
+       },
+
+       "DCPUHighAlarm": {
+        "Type": "AWS::CloudWatch::Alarm",
+        "Condition": "Activate4",
+        "Properties": {
+           "AlarmDescription": "Scale-Out when CPU Util. goes above ScaleOutCPUUtil",
+           "MetricName": "CPUUtilization",
+           "Namespace": "AWS/EC2",
+           "Statistic": "Average",
+           "Period": { "Ref": "BackendEC2ASPeriod4" },
+           "EvaluationPeriods": "2",
+           "Threshold": { "Ref": "BackendScaleOutCPUUtil4" },
+           "AlarmActions": [ { "Ref": "DEC2ScaleOutPolicy" } ],
+           "Dimensions": [
+             {
+               "Name": "AutoScalingGroupName",
+               "Value": { "Ref": "DEC2Group" }
+             }
+           ],
+           "ComparisonOperator": "GreaterThanThreshold"
+         }
+       },
+
+       "DCPULowAlarm": {
+        "Type": "AWS::CloudWatch::Alarm",
+        "Condition": "Activate4",
+        "Properties": {
+           "AlarmDescription": "Scale In when CPU Util. goes below ScaleInCPUUtil",
+           "MetricName": "CPUUtilization",
+           "Namespace": "AWS/EC2",
+           "Statistic": "Average",
+           "Period": { "Ref": "BackendEC2ASPeriod4" },
+           "EvaluationPeriods": "2",
+           "Threshold": { "Ref": "BackendScaleInCPUUtil4" },
+           "AlarmActions": [ { "Ref": "DEC2ScaleInPolicy" } ],
+           "Dimensions": [
+             {
+               "Name": "AutoScalingGroupName",
+               "Value": { "Ref": "DEC2Group" }
+             }
+           ],
+           "ComparisonOperator": "LessThanThreshold"
+         }
+       },
+
+      "EC2SecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupDescription" : "Forward HTTP Traffic only from ELB",
+          "VpcId" : { "Ref" : "VPC" },
+          "SecurityGroupIngress" : [
+            {
+              "IpProtocol" : "tcp",
+              "FromPort" : "80",
+              "ToPort" : "80",
+              "SourceSecurityGroupId" : { "Ref": "ELBSecurityGroup" }
+            }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "EC2SecurityGroup1" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupDescription" : "Forward HTTP Traffic only from ELB",
+          "VpcId" : { "Ref" : "VPC" },
+          "SecurityGroupIngress" : [
+            {
+              "IpProtocol" : "tcp",
+              "FromPort" : "80",
+              "ToPort" : "80"
+
+            }
+          ]
+        },
+        "DependsOn" : "VPC"
+      },
+
+      "LaunchConfig": {
+        "Type" : "AWS::AutoScaling::LaunchConfiguration",
+        "Properties": {
+          "AssociatePublicIpAddress" : "false",
+          "ImageId" : { "Ref" : "FrontendImage" },
+          "InstanceType" : { "Ref" : "InstanceType" },
+          "SecurityGroups" : [ {"Ref" : "EC2SecurityGroup"} ],
+          "UserData" : { "Fn::Base64" : { "Fn::Join" : [ "", [
+               "#!/bin/bash -xe\n",
+               "sudo apt-get update -y\n",
+               "sudo apt-get install -y python3 python3-pip python-setuptools \n",
+               "mkdir -p opt/aws/bin \n",
+               "wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz \n",
+               "sudo python3 -m easy_install --script-dir /opt/aws/bin aws-cfn-bootstrap-py3-latest.tar.gz \n",
+               "sudo -- bash -c 'echo \"export HTTP_PROXY=",{"Fn::GetAtt": ["ApplicationLoadBalancer1", "DNSName"] },":80\" >> /etc/apache2/envvars' \n",
+               "sudo service apache2 restart", "\n",
+               "/opt/aws/bin/cfn-signal -e $? ",
+               " --stack ", { "Ref" : "AWS::StackName" },
+               " --resource EC2ASGroup ",
+               " --region ", { "Ref" : "AWS::Region" }, "\n"
+          ]]}}
+        },
+
+        "DependsOn" : ["IGWAttachment", "natGW0", "natGW1"]
+      },
+
+      "CLaunchConfig": {
+        "Type" : "AWS::AutoScaling::LaunchConfiguration",
+        "Condition": "Activate1",
+
+        "Properties": {
+          "AssociatePublicIpAddress" : "false",
+          "ImageId" : { "Ref" : "BackendImage1" },
+          "InstanceType" : { "Ref" : "BackendInstanceType1" },
+          "SecurityGroups" : [ {"Ref" : "EC2SecurityGroup"} ],
+          "UserData" : { "Fn::Base64" : { "Fn::Join" : [ "", [
+               "#!/bin/bash -xe\n",
+               "sudo apt-get update -y\n",
+               "sudo apt-get install -y python3 python3-pip python-setuptools \n",
+               "mkdir -p opt/aws/bin \n",
+               "wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz \n",
+               "sudo python3 -m easy_install --script-dir /opt/aws/bin aws-cfn-bootstrap-py3-latest.tar.gz \n",
+               "sudo -- bash -c 'echo \"export DB_NAME=",{ "Ref" : "DBName" },"\" >> /etc/apache2/envvars' \n",
+               "sudo -- bash -c 'echo \"export DB_ENDPOINT=",{"Fn::GetAtt" : [ "MySQLDatabase", "Endpoint.Address" ]},"\" >> /etc/apache2/envvars' \n",
+               "sudo -- bash -c 'echo \"export DB_USER=",{ "Ref" : "DBUser" },"\" >> /etc/apache2/envvars' \n",
+               "sudo -- bash -c 'echo \"export DB_PASS=",{ "Ref" : "DBPassword" },"\" >> /etc/apache2/envvars' \n",
+               "sudo service apache2 restart", "\n",
+               "/opt/aws/bin/cfn-signal -e $? ",
+               " --stack ", { "Ref" : "AWS::StackName" },
+               " --resource CEC2Group ",
+               " --region ", { "Ref" : "AWS::Region" }, "\n"
+
+          ]]}}
+        },
+
+        "DependsOn" : ["IGWAttachment", "natGW0", "natGW1"]
+      },
+
+      "RLaunchConfig": {
+        "Type" : "AWS::AutoScaling::LaunchConfiguration",
+        "Condition": "Activate2",
+
+        "Properties": {
+          "AssociatePublicIpAddress" : "false",
+          "ImageId" : { "Ref" : "BackendImage2" },
+          "InstanceType" : { "Ref" : "BackendInstanceType2" },
+          "SecurityGroups" : [ {"Ref" : "EC2SecurityGroup"} ],
+          "UserData" : { "Fn::Base64" : { "Fn::Join" : [ "", [
+            "#!/bin/bash -xe\n",
+            "sudo apt-get update -y\n",
+            "sudo apt-get install -y python3 python3-pip python-setuptools \n",
+            "mkdir -p opt/aws/bin \n",
+            "wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz \n",
+            "sudo python3 -m easy_install --script-dir /opt/aws/bin aws-cfn-bootstrap-py3-latest.tar.gz \n",
+            "sudo -- bash -c 'echo \"export DB_NAME=",{ "Ref" : "DBName" },"\" >> /etc/apache2/envvars' \n",
+            "sudo -- bash -c 'echo \"export DB_ENDPOINT=",{"Fn::GetAtt" : [ "MySQLDatabase", "Endpoint.Address" ]},"\" >> /etc/apache2/envvars' \n",
+            "sudo -- bash -c 'echo \"export DB_USER=",{ "Ref" : "DBUser" },"\" >> /etc/apache2/envvars' \n",
+            "sudo -- bash -c 'echo \"export DB_PASS=",{ "Ref" : "DBPassword" },"\" >> /etc/apache2/envvars' \n",
+            "sudo service apache2 restart", "\n",
+            "/opt/aws/bin/cfn-signal -e $? ",
+            " --stack ", { "Ref" : "AWS::StackName" },
+            " --resource REC2Group ",
+            " --region ", { "Ref" : "AWS::Region" }, "\n"
+
+          ]]}}
+        },
+
+        "DependsOn" : ["IGWAttachment", "natGW0", "natGW1"]
+      },
+
+      "ULaunchConfig": {
+        "Type" : "AWS::AutoScaling::LaunchConfiguration",
+        "Condition": "Activate3",
+
+        "Properties": {
+          "AssociatePublicIpAddress" : "false",
+          "ImageId" : { "Ref" : "BackendImage3" },
+          "InstanceType" : { "Ref" : "BackendInstanceType3" },
+          "SecurityGroups" : [ {"Ref" : "EC2SecurityGroup"} ],
+          "UserData" : { "Fn::Base64" : { "Fn::Join" : [ "", [
+            "#!/bin/bash -xe\n",
+            "sudo apt-get update -y\n",
+            "sudo apt-get install -y python3 python3-pip python-setuptools \n",
+            "mkdir -p opt/aws/bin \n",
+            "wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz \n",
+            "sudo python3 -m easy_install --script-dir /opt/aws/bin aws-cfn-bootstrap-py3-latest.tar.gz \n",
+            "sudo -- bash -c 'echo \"export DB_NAME=",{ "Ref" : "DBName" },"\" >> /etc/apache2/envvars' \n",
+            "sudo -- bash -c 'echo \"export DB_ENDPOINT=",{"Fn::GetAtt" : [ "MySQLDatabase", "Endpoint.Address" ]},"\" >> /etc/apache2/envvars' \n",
+            "sudo -- bash -c 'echo \"export DB_USER=",{ "Ref" : "DBUser" },"\" >> /etc/apache2/envvars' \n",
+            "sudo -- bash -c 'echo \"export DB_PASS=",{ "Ref" : "DBPassword" },"\" >> /etc/apache2/envvars' \n",
+            "sudo service apache2 restart", "\n",
+            "/opt/aws/bin/cfn-signal -e $? ",
+            " --stack ", { "Ref" : "AWS::StackName" },
+            " --resource UEC2Group ",
+            " --region ", { "Ref" : "AWS::Region" }, "\n"
+
+          ]]}}
+        },
+
+        "DependsOn" : ["IGWAttachment", "natGW0", "natGW1"]
+      },
+
+      "DLaunchConfig": {
+        "Type" : "AWS::AutoScaling::LaunchConfiguration",
+        "Condition": "Activate4",
+
+        "Properties": {
+          "AssociatePublicIpAddress" : "false",
+          "ImageId" : { "Ref" : "BackendImage4" },
+          "InstanceType" : { "Ref" : "BackendInstanceType4" },
+          "SecurityGroups" : [ {"Ref" : "EC2SecurityGroup"} ],
+          "UserData" : { "Fn::Base64" : { "Fn::Join" : [ "", [
+            "#!/bin/bash -xe\n",
+            "sudo apt-get update -y\n",
+            "sudo apt-get install -y python3 python3-pip python-setuptools \n",
+            "mkdir -p opt/aws/bin \n",
+            "wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz \n",
+            "sudo python3 -m easy_install --script-dir /opt/aws/bin aws-cfn-bootstrap-py3-latest.tar.gz \n",
+            "sudo -- bash -c 'echo \"export DB_NAME=",{ "Ref" : "DBName" },"\" >> /etc/apache2/envvars' \n",
+            "sudo -- bash -c 'echo \"export DB_ENDPOINT=",{"Fn::GetAtt" : [ "MySQLDatabase", "Endpoint.Address" ]},"\" >> /etc/apache2/envvars' \n",
+            "sudo -- bash -c 'echo \"export DB_USER=",{ "Ref" : "DBUser" },"\" >> /etc/apache2/envvars' \n",
+            "sudo -- bash -c 'echo \"export DB_PASS=",{ "Ref" : "DBPassword" },"\" >> /etc/apache2/envvars' \n",
+            "sudo service apache2 restart", "\n",
+            "/opt/aws/bin/cfn-signal -e $? ",
+            " --stack ", { "Ref" : "AWS::StackName" },
+            " --resource DEC2Group ",
+            " --region ", { "Ref" : "AWS::Region" }, "\n"
+
+          ]]}}
+        },
+
+        "DependsOn" : ["IGWAttachment", "natGW0", "natGW1"]
+      }
+    },
+
+    "Outputs" : {
+
+        "AccessURL" : {
+          "Description" : "App URL",
+          "Value" : { "Fn::Join" : [ "", [
+            "https://",{ "Fn::Join" : ["",[ "www.", { "Ref" : "Domain" } ] ] }
+          ]]}
+        },
+        "DBEndpoint" : {
+          "Description" : "MySQL Endpoint",
+          "Value" : { "Fn::Join" : [ "", [
+            { "Fn::GetAtt": [ "MySQLDatabase", "Endpoint.Address" ] }, ":3306"
+          ]]}
+        },
+        "DBUser" : {
+          "Description" : "MySQL Username",
+          "Value" : { "Ref" : "DBUser" }
+        },
+        "DBName" : {
+          "Description" : "MySQL Database name",
+          "Value" : { "Ref" : "DBName" }
+        },
+        "ApplicationName" : {
+          "Description" : "Application Name",
+          "Value" : { "Ref" : "AppName" }
+        },
+        "Stack" : {
+          "Description" : "Stack",
+          "Value" : "LAMP"
+        },
+        "AppEMail" : {
+          "Description" : "Admin Email",
+          "Value" : { "Ref" : "OpsEmail" }
+        },
+
+        "RDSEngine" : {
+          "Description" : "RDS Engine",
+          "Value" : "MySQL"
+        },
+        "RDSInstanceClass" : {
+          "Description" : "RDS Instance Class",
+          "Value" : { "Ref" : "DBInstanceClass" }
+        }
+      }
+
+
+
+}
